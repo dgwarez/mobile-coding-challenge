@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TradeRevChallenge</string>
+    <string name="default_title">TradeRevChallenge</string>
+    <string name="error_string">There has been an error</string>
+    <string name="api_key_error_header">API Key not found</string>
+    <string name="api_key_error">API Key not found. Place api key as APP_KEY="YOUR_API_KEY_HERE" in app.properties file in assets folder</string>
+    <string name="discover_photos_string">Discover new Photos from our popular section!</string>
+</resources>
