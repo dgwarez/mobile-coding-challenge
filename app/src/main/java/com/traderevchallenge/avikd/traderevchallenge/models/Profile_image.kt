@@ -1,5 +1,4 @@
 package com.traderevchallenge.avikd.traderevchallenge.models
-
 /*
 Copyright (c) 2019 Kotlin Data Classes Generated from JSON powered by http://www.json2kotlin.com
 

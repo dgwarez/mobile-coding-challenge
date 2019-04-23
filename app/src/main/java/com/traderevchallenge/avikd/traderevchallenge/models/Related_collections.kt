@@ -11,11 +11,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For support, please feel free to contact me at https://www.linkedin.com/in/syedabsar */
 
 
-data class Urls (
+data class Related_collections (
 
-	val raw : String?,
-	val full : String?,
-	val regular : String?,
-	val small : String?,
-	val thumb : String?
+	val total : Int?,
+	val type : String?,
+	val results : List<Results>?
 )

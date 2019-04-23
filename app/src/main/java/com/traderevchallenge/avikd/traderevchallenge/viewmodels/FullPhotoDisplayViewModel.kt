@@ -1,5 +1,6 @@
 package com.traderevchallenge.avikd.traderevchallenge.viewmodels
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -12,10 +13,34 @@ import com.traderevchallenge.avikd.traderevchallenge.datasource.PhotosDataSource
 import com.traderevchallenge.avikd.traderevchallenge.models.PhotosBase
 import com.traderevchallenge.avikd.traderevchallenge.network.ApiResponse
 import com.traderevchallenge.avikd.traderevchallenge.network.Repository
+import com.traderevchallenge.avikd.traderevchallenge.utils.ApiKeyProvider
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 
+class FullPhotoDisplayViewModel(repository: Repository) : ViewModel() {
 
-class PhotosViewModel(repository: Repository) : ViewModel() {
+    private val mRepository = repository
+    var mPhotoId: String? = ""
+    var progressLiveStatus: MutableLiveData<ApiResponse<Any?>> = MutableLiveData()
+    private val compositeDisposable = CompositeDisposable()
+    fun hitPhotosByIdApi(context: Context) {
+        compositeDisposable.add(mRepository.executePhotoDetailsById(
+            ApiKeyProvider.fetchApiKey(),
+            mPhotoId
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { disposable -> progressLiveStatus.postValue(ApiResponse.loading()) }
+            .subscribe(
+                { result ->
+                    run {
+                        progressLiveStatus.postValue(ApiResponse.success(result))
+                    }
+                },
+                { throwable -> progressLiveStatus.postValue(ApiResponse.error(throwable)) }
+            ))
+    }
 
     private val photosDataSourceFactory: PhotosDataSourceFactory
     var firstLoad = true
@@ -23,12 +48,12 @@ class PhotosViewModel(repository: Repository) : ViewModel() {
         private set
 
     var progressLoadStatus: LiveData<ApiResponse<Any?>> = MutableLiveData()
-    private val compositeDisposable = CompositeDisposable()
+    private val compositeDisposablePagedList = CompositeDisposable()
 
     init {
         photosDataSourceFactory = PhotosDataSourceFactory(
             repository,
-            compositeDisposable
+            compositeDisposablePagedList
         )
         val pagedListConfig = PagedList.Config.Builder()
             .setEnablePlaceholders(true)
@@ -37,11 +62,12 @@ class PhotosViewModel(repository: Repository) : ViewModel() {
         listLiveData = LivePagedListBuilder(photosDataSourceFactory, pagedListConfig)
             .build()
         progressLoadStatus = Transformations.switchMap(
-            photosDataSourceFactory.mutableLiveData, PhotosDataSourceClass::progressLiveStatus)
+            photosDataSourceFactory.mutableLiveData, PhotosDataSourceClass::progressLiveStatus
+        )
     }
 
     override fun onCleared() {
         super.onCleared()
-        compositeDisposable.clear()
+        compositeDisposablePagedList.clear()
     }
 }

@@ -72,15 +72,4 @@ class PhotosDataSourceClass internal constructor(
                 { throwable -> progressLiveStatus.postValue(ApiResponse.error(throwable)) }
             ))
     }
-
-    fun startAPICall() {
-        if (completable != null) {
-            compositeDisposable.add(
-                completable!!
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe()
-            )
-        }
-    }
 }

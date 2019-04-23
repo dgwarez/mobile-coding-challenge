@@ -11,11 +11,21 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For support, please feel free to contact me at https://www.linkedin.com/in/syedabsar */
 
 
-data class Urls (
+data class Results (
 
-	val raw : String?,
-	val full : String?,
-	val regular : String?,
-	val small : String?,
-	val thumb : String?
+	val id : Int?,
+	val title : String?,
+	val description : String?,
+	val published_at : String?,
+	val updated_at : String?,
+	val curated : Boolean?,
+	val featured : Boolean?,
+	val total_photos : Int?,
+	val private : Boolean?,
+	val share_share_key : String?,
+	val tags : List<Tags>?,
+	val links : Links?,
+	val user : User?,
+	val cover_photo : Cover_photo?,
+	val preview_photos : List<Preview_photos>?
 )

@@ -14,7 +14,7 @@ For support, please feel free to contact me at https://www.linkedin.com/in/syeda
 
 data class PhotosBase (
 
-	val id : String?,
+	val id : String,
 	val created_at : String?,
 	val updated_at : String?,
 	val width : Int?,
