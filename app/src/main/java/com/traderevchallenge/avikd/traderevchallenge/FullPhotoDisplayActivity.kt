@@ -3,6 +3,7 @@ package com.traderevchallenge.avikd.traderevchallenge
 import android.content.DialogInterface
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,8 @@ import javax.inject.Inject
 
 class FullPhotoDisplayActivity : AppCompatActivity() {
     var photoId: String? = ""
+    var position: Int = 0
+    var scrollToPosition: Int = 0
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private lateinit var fullPhotoDisplayViewModel: FullPhotoDisplayViewModel
@@ -32,7 +35,14 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         this.supportActionBar?.hide()
         photoId = intent.getStringExtra("photoId")
-        val pageNumber = 1
+        position = intent.getIntExtra("position", 0)
+        var pageNoCalculated = (position / 10) + 1
+        scrollToPosition = position % 10
+        if (pageNoCalculated == 0) {
+            MyApplication.currentPageNumber = 1
+        } else {
+            MyApplication.currentPageNumber = pageNoCalculated
+        }
         setContentView(R.layout.activity_full_photo_display)
         //Setup recyclerView viewPager
         (application as MyApplication).appComponent.doInjectionPhotos(this)
@@ -47,33 +57,19 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
     private fun initializePageList() {
         if (isAPIKeyAvailable()) {
             fullPhotoDisplayViewModel.listLiveData.observe(this, androidx.lifecycle.Observer {
-                recyclerViewViewPager.layoutManager = LinearLayoutManager(this@FullPhotoDisplayActivity, LinearLayoutManager.HORIZONTAL, false)
+                recyclerViewViewPager.layoutManager =
+                    LinearLayoutManager(this@FullPhotoDisplayActivity, LinearLayoutManager.HORIZONTAL, false)
                 recyclerViewViewPager.adapter = FullSizePhotoAdapter()
                 val snapHelper = PagerSnapHelper()
                 snapHelper.attachToRecyclerView(recyclerViewViewPager)
-                recyclerViewViewPager.attachSnapHelperWithListener(snapHelper, SnapOnScrollListener.Behavior.NOTIFY_ON_SCROLL_STATE_IDLE, object : OnSnapPositionChangeListener {
-                    override fun onSnapPositionChange(position: Int) {
-                        println(position)
-                    }
-                })
-                /*RVPagerSnapHelperListenable().attachToRecyclerView(
-                    recyclerViewViewPager,
-                    object : RVPagerStateListener {
-                        override fun onPageScroll(pagesState: List<VisiblePageState>) {
-                            for (pageState in pagesState) {
-                                val vh = recyclerViewViewPager.findContainingViewHolder(pageState.view)
-                                //vh.setRealtimeAttr(pageState.index, pageState.viewCenterX.toString(), pageState.distanceToSettled, pageState.distanceToSettledPixels)
-                            }
+                recyclerViewViewPager.attachSnapHelperWithListener(
+                    snapHelper,
+                    SnapOnScrollListener.Behavior.NOTIFY_ON_SCROLL_STATE_IDLE,
+                    object : OnSnapPositionChangeListener {
+                        override fun onSnapPositionChange(position: Int) {
+                            println(position)
                         }
-
-                        override fun onScrollStateChanged(state: RVPageScrollState) {
-                        }
-
-                        override fun onPageSelected(index: Int) {
-                            val vh = recyclerViewViewPager.findViewHolderForAdapterPosition(index)
-                            //vh?.onSelected()
-                        }
-                    })*/
+                    })
                 (recyclerViewViewPager.adapter as FullSizePhotoAdapter).submitList(it)
             })
 
@@ -126,6 +122,10 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
     }
 
     private fun renderSuccessResponse() {
+        if (fullPhotoDisplayViewModel.firstLoad) {
+            recyclerViewViewPager.scrollToPosition(scrollToPosition)
+            fullPhotoDisplayViewModel.firstLoad = false
+        }
 /*        Log.d("Avik", response?.photo?.images?.get(0)?.url)
         val url = response?.photo?.images?.get(0)?.url
         Glide.with(this)

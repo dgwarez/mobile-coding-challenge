@@ -1,8 +1,10 @@
 package com.traderevchallenge.avikd.traderevchallenge.datasource
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PageKeyedDataSource
+import com.traderevchallenge.avikd.traderevchallenge.MyApplication
 import com.traderevchallenge.avikd.traderevchallenge.models.PhotosBase
 import com.traderevchallenge.avikd.traderevchallenge.network.ApiResponse
 import com.traderevchallenge.avikd.traderevchallenge.network.Repository
@@ -24,9 +26,10 @@ class PhotosDataSourceClass internal constructor(
         params: PageKeyedDataSource.LoadInitialParams<Int>,
         callback: PageKeyedDataSource.LoadInitialCallback<Int, PhotosBase>
     ) {
+        Log.d("Page No: load Initial= ",MyApplication.currentPageNumber.toString())
         compositeDisposable.add(repository.executePhotos(
             ApiKeyProvider.fetchApiKey(),
-            1
+            MyApplication.currentPageNumber
         )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -35,18 +38,45 @@ class PhotosDataSourceClass internal constructor(
                 { result ->
                     run {
                         progressLiveStatus.postValue(ApiResponse.success(result))
-                        callback.onResult(result, null, 2)
+                        var previousPageKey:Int? = null
+                        if (MyApplication.currentPageNumber > 1) {
+                            previousPageKey = MyApplication.currentPageNumber - 1
+                        }
+                        callback.onResult(result, previousPageKey, MyApplication.currentPageNumber + 1)
                     }
                 },
                 { throwable -> progressLiveStatus.postValue(ApiResponse.error(throwable)) }
             ))
     }
 
+    @SuppressLint("CheckResult")
     override fun loadBefore(
         params: PageKeyedDataSource.LoadParams<Int>,
         callback: PageKeyedDataSource.LoadCallback<Int, PhotosBase>
     ) {
-
+        compositeDisposable.add(repository.executePhotos(
+            ApiKeyProvider.fetchApiKey(),
+            params.key
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { d -> progressLiveStatus.postValue(ApiResponse.loading()) }
+            .subscribe(
+                { result ->
+                    progressLiveStatus.postValue(ApiResponse.success(result))
+                    var adjacentParamsKey:Int? = null
+                    if (params.key > 1) {
+                        adjacentParamsKey = params.key - 1
+                    }
+                    callback.onResult(
+                        result,
+                        adjacentParamsKey
+                    )
+                    MyApplication.currentPageNumber = params.key
+                    Log.d("Page No: load Before = ",MyApplication.currentPageNumber.toString())
+                },
+                { throwable -> progressLiveStatus.postValue(ApiResponse.error(throwable)) }
+            ))
     }
 
     @SuppressLint("CheckResult")
@@ -68,6 +98,8 @@ class PhotosDataSourceClass internal constructor(
                         result,
                         params.key + 1
                     )
+                    MyApplication.currentPageNumber = params.key
+                    Log.d("Page No: load After = ",MyApplication.currentPageNumber.toString())
                 },
                 { throwable -> progressLiveStatus.postValue(ApiResponse.error(throwable)) }
             ))

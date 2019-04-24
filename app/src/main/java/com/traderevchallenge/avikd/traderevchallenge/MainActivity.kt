@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private lateinit var photosViewModel: PhotosViewModel
+    val FULL_SCREEN_REQUEST_CODE = 1
     //private lateinit var favPlaces: RecyclerView
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
@@ -97,19 +98,29 @@ class MainActivity : AppCompatActivity() {
         //favPlaces.adapter?.notifyDataSetChanged()
         (photoGrid.adapter as StaggeredAdapter).setOnBluetoothDeviceClickedListener(object :
             StaggeredAdapter.OnBluetoothDeviceClickedListener {
-            override fun onPhotoClicked(photoId: String?) {
-                startFullPhotoDisplayActivity(photoId)
+            override fun onPhotoClicked(photoId: String?, position: Int) {
+                startFullPhotoDisplayActivity(photoId, position)
                 Log.d("TradeRevChallengeTest", photoId.toString())
             }
         })
     }
 
-    private fun startFullPhotoDisplayActivity(photoId: String?) {
+    private fun startFullPhotoDisplayActivity(photoId: String?, position: Int) {
         if (isAPIKeyAvailable()) {
             val intent = Intent(this@MainActivity, FullPhotoDisplayActivity::class.java)
             intent.putExtra("photoId", photoId)
-            startActivity(intent)
+            intent.putExtra("position", position)
+            startActivityForResult(intent, FULL_SCREEN_REQUEST_CODE)
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+          FULL_SCREEN_REQUEST_CODE -> {
+
+          }
         }
     }
 
