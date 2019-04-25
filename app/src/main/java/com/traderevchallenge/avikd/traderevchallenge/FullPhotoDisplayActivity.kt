@@ -23,7 +23,11 @@ import com.traderevchallenge.avikd.traderevchallenge.viewmodels.ViewModelFactory
 import kotlinx.android.synthetic.main.activity_full_photo_display.*
 import javax.inject.Inject
 import android.content.Intent
+import android.provider.ContactsContract
+import android.view.View
 import com.traderevchallenge.avikd.traderevchallenge.appconstants.AppConstants.PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE
+import com.traderevchallenge.avikd.traderevchallenge.models.PhotoByIdAPIBase
+import com.traderevchallenge.avikd.traderevchallenge.models.PhotosBase
 
 
 class FullPhotoDisplayActivity : AppCompatActivity() {
@@ -76,6 +80,7 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
                 recyclerViewViewPager.layoutManager =
                     LinearLayoutManager(this@FullPhotoDisplayActivity, LinearLayoutManager.HORIZONTAL, false)
                 val snapHelper = PagerSnapHelper()
+                (recyclerViewViewPager.adapter as FullSizePhotoAdapter).submitList(it)
                 snapHelper.attachToRecyclerView(recyclerViewViewPager)
                 recyclerViewViewPager.attachSnapHelperWithListener(
                     snapHelper,
@@ -118,16 +123,15 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
                             preivousPosition = position
                         }
                     })
-                (recyclerViewViewPager.adapter as FullSizePhotoAdapter).submitList(it)
             })
 
             fullPhotoDisplayViewModel.progressLoadStatus.observe(this, androidx.lifecycle.Observer {
                 when {
-                    (it as ApiResponse<Any?>).status == Status.LOADING -> {
+                    it.status == Status.LOADING -> {
 
                     }
                     it.status == Status.SUCCESS -> {
-                        renderSuccessResponse()
+                        renderSuccessResponse(it.data as List<PhotosBase>)
                     }
                     it.status == Status.COMPLETED -> {
 
@@ -149,11 +153,11 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
     private fun initObserver() {
         fullPhotoDisplayViewModel.progressLiveStatus.observe(this, Observer {
             when {
-                (it as ApiResponse<Any?>).status == Status.LOADING -> {
+                it.status == Status.LOADING -> {
 
                 }
                 it.status == Status.SUCCESS -> {
-                    renderSuccessResponse()
+                    renderInfoResponse(it.data as PhotoByIdAPIBase)
                 }
                 it.status == Status.COMPLETED -> {
 
@@ -168,13 +172,23 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
             }
         })
     }
-
-    private fun renderSuccessResponse() {
+    private fun renderInfoResponse(photoByIdAPIBase: PhotoByIdAPIBase) {
+        Log.e("Photo desc",photoByIdAPIBase.alt_description?:photoByIdAPIBase.description?:"")
+    }
+    private fun renderSuccessResponse(photosBaseList: List<PhotosBase>) {
+        initObserver()
         if (fullPhotoDisplayViewModel.firstLoad) {
             Log.d("Avik: scrollToPositionF", scrollToPosition.toString())
             recyclerViewViewPager.scrollToPosition(scrollToPosition)
             fullPhotoDisplayViewModel.firstLoad = false
         }
+        (recyclerViewViewPager.adapter as FullSizePhotoAdapter).setOnBluetoothDeviceClickedListener(object :
+            FullSizePhotoAdapter.OnBluetoothDeviceClickedListener {
+            override fun onPhotoClicked(photoId: String?) {
+                fullPhotoDisplayViewModel.mPhotoId = photoId
+                fullPhotoDisplayViewModel.hitPhotosByIdApi(this@FullPhotoDisplayActivity)
+            }
+        })
 /*        Log.d("Avik", response?.photo?.images?.get(0)?.url)
         val url = response?.photo?.images?.get(0)?.url
         Glide.with(this)

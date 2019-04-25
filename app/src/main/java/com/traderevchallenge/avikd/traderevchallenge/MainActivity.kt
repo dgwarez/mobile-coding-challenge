@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
             photosViewModel.progressLoadStatus.observe(this, androidx.lifecycle.Observer {
                 when {
-                    (it as ApiResponse<Any?>).status == Status.LOADING -> {
+                    it.status == Status.LOADING -> {
 
                     }
                     it.status == Status.SUCCESS -> {

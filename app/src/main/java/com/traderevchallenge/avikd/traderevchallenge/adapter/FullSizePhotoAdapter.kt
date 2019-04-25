@@ -29,8 +29,8 @@ class FullSizePhotoAdapter :
 
     override fun onBindViewHolder(holder: FullSizePhotosViewHolder, position: Int) {
         if (itemCount >0 ) {
-            holder.bind(getItem(position))
-            holder.itemView.setOnClickListener(View.OnClickListener { mBluetoothClickListener?.onPhotoClicked(getItem(position)?.id) })
+            holder.bind(getItem(holder.adapterPosition))
+            holder.itemView.setOnClickListener(View.OnClickListener { mBluetoothClickListener?.onPhotoClicked(getItem(holder.adapterPosition)?.id) })
         }
     }
 

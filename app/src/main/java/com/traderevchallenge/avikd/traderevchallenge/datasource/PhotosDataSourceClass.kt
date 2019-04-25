@@ -26,6 +26,7 @@ class PhotosDataSourceClass internal constructor(
         params: PageKeyedDataSource.LoadInitialParams<Int>,
         callback: PageKeyedDataSource.LoadInitialCallback<Int, PhotosBase>
     ) {
+        compositeDisposable.clear()
         Log.d("Page No: load Initial= ",MyApplication.currentPageNumber.toString())
         compositeDisposable.add(repository.executePhotos(
             ApiKeyProvider.fetchApiKey(),

@@ -24,24 +24,6 @@ class FullPhotoDisplayViewModel(repository: Repository) : ViewModel() {
     var mPhotoId: String? = ""
     var progressLiveStatus: MutableLiveData<ApiResponse<Any?>> = MutableLiveData()
     private val compositeDisposable = CompositeDisposable()
-    fun hitPhotosByIdApi(context: Context) {
-        compositeDisposable.add(mRepository.executePhotoDetailsById(
-            ApiKeyProvider.fetchApiKey(),
-            mPhotoId
-        )
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { disposable -> progressLiveStatus.postValue(ApiResponse.loading()) }
-            .subscribe(
-                { result ->
-                    run {
-                        progressLiveStatus.postValue(ApiResponse.success(result))
-                    }
-                },
-                { throwable -> progressLiveStatus.postValue(ApiResponse.error(throwable)) }
-            ))
-    }
-
     private val photosDataSourceFactory: PhotosDataSourceFactory
     var firstLoad = true
     var listLiveData: LiveData<PagedList<PhotosBase>>
@@ -66,8 +48,27 @@ class FullPhotoDisplayViewModel(repository: Repository) : ViewModel() {
         )
     }
 
+    fun hitPhotosByIdApi(context: Context) {
+        compositeDisposable.add(mRepository.executePhotoDetailsById(
+            ApiKeyProvider.fetchApiKey(),
+            mPhotoId
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { disposable -> progressLiveStatus.postValue(ApiResponse.loading()) }
+            .subscribe(
+                { result ->
+                    run {
+                        progressLiveStatus.postValue(ApiResponse.success(result))
+                    }
+                },
+                { throwable -> progressLiveStatus.postValue(ApiResponse.error(throwable)) }
+            ))
+    }
+
     override fun onCleared() {
         super.onCleared()
         compositeDisposablePagedList.clear()
+        compositeDisposable.clear()
     }
 }

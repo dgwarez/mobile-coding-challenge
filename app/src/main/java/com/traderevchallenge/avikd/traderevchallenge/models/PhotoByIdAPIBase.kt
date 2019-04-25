@@ -33,7 +33,7 @@ data class PhotoByIdAPIBase (
 	val user : User?,
 	val exif : Exif?,
 	val location : Location?,
-	val tags : List<String>?,
+	val tags : List<Tags>?,
 	val story : Story?,
 	val related_collections : Related_collections?,
 	val views : Int?,
