@@ -11,7 +11,7 @@ import retrofit2.http.Query
 interface ApiCallInterface {
 
     @GET(UrlConstants.PHOTOS_URL)
-    fun fetchPopularPhotos(@Query("client_id") client_id: String, @Query("page") page: Int): Observable<List<PhotosBase>>
+    fun fetchPopularPhotos(@Query("client_id") client_id: String, @Query("page") page: Int, @Query("per_page") per_page: Int): Observable<List<PhotosBase>>
     @GET(UrlConstants.PHOTOS_URL+"/{photoId}")
     fun fetchPhotoDetailsById(@Path(value = "photoId", encoded = true) photoId: String?, @Query("client_id") consumer_key: String): Observable<PhotoByIdAPIBase>
 }

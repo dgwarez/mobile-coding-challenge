@@ -11,10 +11,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.traderevchallenge.avikd.traderevchallenge.adapter.StaggeredAdapter
-import com.traderevchallenge.avikd.traderevchallenge.models.PhotosBase
 import com.traderevchallenge.avikd.traderevchallenge.network.ApiResponse
 import com.traderevchallenge.avikd.traderevchallenge.network.Status
 import com.traderevchallenge.avikd.traderevchallenge.utils.ApiKeyProvider
@@ -50,10 +48,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    internal fun onDisplayPhotosClick() {
+    internal fun onDisplayPhotosClick(scrollToPosition: Int = 0) {
         if (isAPIKeyAvailable()) {
+            photoGrid.adapter = StaggeredAdapter()
             photosViewModel.listLiveData.observe(this, androidx.lifecycle.Observer {
-                photoGrid.adapter = StaggeredAdapter()
                 (photoGrid.adapter as StaggeredAdapter).submitList(it)
             })
 
@@ -63,7 +61,7 @@ class MainActivity : AppCompatActivity() {
 
                     }
                     it.status == Status.SUCCESS -> {
-                        renderSuccessResponse()
+                        renderSuccessResponse(scrollToPosition)
                     }
                     it.status == Status.COMPLETED -> {
 
@@ -85,7 +83,7 @@ class MainActivity : AppCompatActivity() {
     /*
 * method to handle success response
 * */
-    private fun renderSuccessResponse() {
+    private fun renderSuccessResponse(scrollToPosition: Int) {
         if (photosViewModel.firstLoad) {
             val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
             layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS
@@ -94,6 +92,7 @@ class MainActivity : AppCompatActivity() {
             photoGrid.layoutManager = layoutManager
             photoGrid.setHasFixedSize(true)
             photosViewModel.firstLoad = false
+            photoGrid.scrollToPosition(scrollToPosition)
         }
         //favPlaces.adapter?.notifyDataSetChanged()
         (photoGrid.adapter as StaggeredAdapter).setOnBluetoothDeviceClickedListener(object :
@@ -110,6 +109,7 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this@MainActivity, FullPhotoDisplayActivity::class.java)
             intent.putExtra("photoId", photoId)
             intent.putExtra("position", position)
+            intent.putExtra("requestCode", FULL_SCREEN_REQUEST_CODE)
             startActivityForResult(intent, FULL_SCREEN_REQUEST_CODE)
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         }
@@ -119,7 +119,11 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
           FULL_SCREEN_REQUEST_CODE -> {
-
+              val scrollToPosition = data?.getIntExtra("scrollToPosition",0)
+              photosViewModel.listLiveData.value?.dataSource?.invalidate()
+              photosViewModel.firstLoad = true
+              //MyApplication.currentPageNumber = MyApplication.currentPageNumber - 2
+              onDisplayPhotosClick(scrollToPosition?:0)
           }
         }
     }

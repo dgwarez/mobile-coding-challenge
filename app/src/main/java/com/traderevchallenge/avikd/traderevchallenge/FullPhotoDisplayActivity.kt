@@ -22,11 +22,18 @@ import com.traderevchallenge.avikd.traderevchallenge.viewmodels.FullPhotoDisplay
 import com.traderevchallenge.avikd.traderevchallenge.viewmodels.ViewModelFactory
 import kotlinx.android.synthetic.main.activity_full_photo_display.*
 import javax.inject.Inject
+import android.content.Intent
+import com.traderevchallenge.avikd.traderevchallenge.appconstants.AppConstants.PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE
+
 
 class FullPhotoDisplayActivity : AppCompatActivity() {
     var photoId: String? = ""
     var position: Int = 0
     var scrollToPosition: Int = 0
+    var requestCode: Int = 0
+    var onScrollChangedPageNoTracker: Int = 0
+    var onScrollChangedPositionTracker: Int = 0
+    var preivousPosition: Int = 0
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private lateinit var fullPhotoDisplayViewModel: FullPhotoDisplayViewModel
@@ -36,13 +43,17 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
         this.supportActionBar?.hide()
         photoId = intent.getStringExtra("photoId")
         position = intent.getIntExtra("position", 0)
-        var pageNoCalculated = (position / 10) + 1
-        scrollToPosition = position % 10
+        requestCode = intent.getIntExtra("requestCode", 0)
+        onScrollChangedPositionTracker = position
+        var pageNoCalculated = (position / PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE) + 1
+        scrollToPosition = position % PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE
         if (pageNoCalculated == 0) {
             MyApplication.currentPageNumber = 1
         } else {
             MyApplication.currentPageNumber = pageNoCalculated
         }
+        preivousPosition = position
+        onScrollChangedPageNoTracker = MyApplication.currentPageNumber
         setContentView(R.layout.activity_full_photo_display)
         //Setup recyclerView viewPager
         (application as MyApplication).appComponent.doInjectionPhotos(this)
@@ -56,18 +67,54 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
 
     private fun initializePageList() {
         if (isAPIKeyAvailable()) {
+            Log.d("Avik: ini Swiperight", "Swiperight!")
+            Log.d("Avik: ini Position", position.toString())
+            Log.d("Avik:iniscrollToMainGr", onScrollChangedPositionTracker.toString())
+            recyclerViewViewPager.adapter = FullSizePhotoAdapter()
             fullPhotoDisplayViewModel.listLiveData.observe(this, androidx.lifecycle.Observer {
                 recyclerViewViewPager.layoutManager =
                     LinearLayoutManager(this@FullPhotoDisplayActivity, LinearLayoutManager.HORIZONTAL, false)
-                recyclerViewViewPager.adapter = FullSizePhotoAdapter()
                 val snapHelper = PagerSnapHelper()
                 snapHelper.attachToRecyclerView(recyclerViewViewPager)
                 recyclerViewViewPager.attachSnapHelperWithListener(
                     snapHelper,
-                    SnapOnScrollListener.Behavior.NOTIFY_ON_SCROLL_STATE_IDLE,
+                    SnapOnScrollListener.Behavior.NOTIFY_ON_SCROLL,
                     object : OnSnapPositionChangeListener {
                         override fun onSnapPositionChange(position: Int) {
-                            println(position)
+                            Log.d("Avik: RecyclerViewsnap", position.toString())
+                            //Moving forward to right
+                            //Moving backward to left
+                            if (preivousPosition < position) {
+                                if (position - preivousPosition == 1) {
+                                    onScrollChangedPositionTracker++
+                                    if (position % PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE == 0) {
+                                        onScrollChangedPageNoTracker++
+                                        Log.d("Avik: scrollToPage", onScrollChangedPageNoTracker.toString())
+                                    }
+                                    Log.d("Avik: Swiperight", "Swiperight!")
+                                    Log.d("Avik: Position", position.toString())
+                                    Log.d("Avik: scrollToMainGrid", onScrollChangedPositionTracker.toString())
+                                } else {
+                                    //This is page change to the left - A new page has been loaded updating listsize
+                                    if (onScrollChangedPageNoTracker > 0) onScrollChangedPageNoTracker--
+                                    Log.d("Avik: Special Swipeleft", "Swipeleft!")
+                                    Log.d("Avik: Position", position.toString())
+                                    Log.d("Avik: scrollToPage", onScrollChangedPageNoTracker.toString())
+                                    Log.d("Avik: scrollToMainGrid", onScrollChangedPositionTracker.toString())
+                                }
+                            } else if (preivousPosition > position) {
+                                if (preivousPosition - position == 1) {
+                                    onScrollChangedPositionTracker--
+                                    if (position % PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE == 0) {
+                                        if (onScrollChangedPageNoTracker > 0) onScrollChangedPageNoTracker--
+                                        Log.d("Avik: scrollToPage", onScrollChangedPageNoTracker.toString())
+                                    }
+                                    Log.d("Avik: Swipeleft", "Swipeleft!")
+                                    Log.d("Avik: Position", position.toString())
+                                    Log.d("Avik: scrollToMainGrid", onScrollChangedPositionTracker.toString())
+                                }
+                            }
+                            preivousPosition = position
                         }
                     })
                 (recyclerViewViewPager.adapter as FullSizePhotoAdapter).submitList(it)
@@ -123,6 +170,7 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
 
     private fun renderSuccessResponse() {
         if (fullPhotoDisplayViewModel.firstLoad) {
+            Log.d("Avik: scrollToPositionF", scrollToPosition.toString())
             recyclerViewViewPager.scrollToPosition(scrollToPosition)
             fullPhotoDisplayViewModel.firstLoad = false
         }
@@ -151,5 +199,15 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
             }
             false
         } else true
+    }
+
+    override fun onBackPressed() {
+        val resultIntent = Intent()
+        MyApplication.currentPageNumber = (onScrollChangedPositionTracker/PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE) + 1
+        resultIntent.putExtra("loadInitialPageNo", MyApplication.currentPageNumber)
+        resultIntent.putExtra("scrollToPosition", onScrollChangedPositionTracker % PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE)
+        setResult(requestCode, resultIntent)
+        finish()
+        super.onBackPressed()
     }
 }
