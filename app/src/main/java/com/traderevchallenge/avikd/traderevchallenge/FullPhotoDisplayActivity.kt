@@ -66,6 +66,7 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
     }
 
     private fun initializePageList() {
+        fullPhotoDisplayViewModel.listLiveData.value?.dataSource?.invalidate()
         if (isAPIKeyAvailable()) {
             Log.d("Avik: ini Swiperight", "Swiperight!")
             Log.d("Avik: ini Position", position.toString())
@@ -204,7 +205,7 @@ class FullPhotoDisplayActivity : AppCompatActivity() {
     override fun onBackPressed() {
         val resultIntent = Intent()
         MyApplication.currentPageNumber = (onScrollChangedPositionTracker/PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE) + 1
-        resultIntent.putExtra("loadInitialPageNo", MyApplication.currentPageNumber)
+        resultIntent.putExtra("loadInitPageNumber", MyApplication.currentPageNumber)
         resultIntent.putExtra("scrollToPosition", onScrollChangedPositionTracker % PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE)
         setResult(requestCode, resultIntent)
         finish()

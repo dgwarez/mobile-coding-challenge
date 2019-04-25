@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.traderevchallenge.avikd.traderevchallenge.adapter.StaggeredAdapter
+import com.traderevchallenge.avikd.traderevchallenge.appconstants.AppConstants
 import com.traderevchallenge.avikd.traderevchallenge.network.ApiResponse
 import com.traderevchallenge.avikd.traderevchallenge.network.Status
 import com.traderevchallenge.avikd.traderevchallenge.utils.ApiKeyProvider
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private lateinit var photosViewModel: PhotosViewModel
+    var loadInitPageNumber: Int= 1
     val FULL_SCREEN_REQUEST_CODE = 1
     //private lateinit var favPlaces: RecyclerView
 
@@ -108,7 +110,10 @@ class MainActivity : AppCompatActivity() {
         if (isAPIKeyAvailable()) {
             val intent = Intent(this@MainActivity, FullPhotoDisplayActivity::class.java)
             intent.putExtra("photoId", photoId)
-            intent.putExtra("position", position)
+            Log.d("Positioning position", position.toString())
+            Log.d("Positioning loadinitpn", loadInitPageNumber.toString())
+            Log.d("Positioning currentPage", MyApplication.currentPageNumber.toString())
+            intent.putExtra("position", position + ((loadInitPageNumber -1) * AppConstants.PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE))
             intent.putExtra("requestCode", FULL_SCREEN_REQUEST_CODE)
             startActivityForResult(intent, FULL_SCREEN_REQUEST_CODE)
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
@@ -120,9 +125,9 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
           FULL_SCREEN_REQUEST_CODE -> {
               val scrollToPosition = data?.getIntExtra("scrollToPosition",0)
+              loadInitPageNumber = data?.getIntExtra("loadInitPageNumber",1)?:1
               photosViewModel.listLiveData.value?.dataSource?.invalidate()
               photosViewModel.firstLoad = true
-              //MyApplication.currentPageNumber = MyApplication.currentPageNumber - 2
               onDisplayPhotosClick(scrollToPosition?:0)
           }
         }
