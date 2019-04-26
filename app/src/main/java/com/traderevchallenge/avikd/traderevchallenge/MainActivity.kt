@@ -2,8 +2,6 @@ package com.traderevchallenge.avikd.traderevchallenge
 
 
 import android.content.DialogInterface
-import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -11,11 +9,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.traderevchallenge.avikd.traderevchallenge.adapter.StaggeredAdapter
-import com.traderevchallenge.avikd.traderevchallenge.appconstants.AppConstants
-import com.traderevchallenge.avikd.traderevchallenge.network.ApiResponse
+import com.traderevchallenge.avikd.traderevchallenge.callbackinterfaces.OnSnapPositionChangeListener
 import com.traderevchallenge.avikd.traderevchallenge.network.Status
+import com.traderevchallenge.avikd.traderevchallenge.recyclerviewpagesnaphelper.SnapOnScrollListener
+import com.traderevchallenge.avikd.traderevchallenge.snapviewlistenerextension.attachSnapHelperWithListener
 import com.traderevchallenge.avikd.traderevchallenge.utils.ApiKeyProvider
 import com.traderevchallenge.avikd.traderevchallenge.viewmodels.PhotosViewModel
 import com.traderevchallenge.avikd.traderevchallenge.viewmodels.ViewModelFactory
@@ -29,28 +30,19 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private lateinit var photosViewModel: PhotosViewModel
-    var loadInitPageNumber: Int= 1
-    val FULL_SCREEN_REQUEST_CODE = 1
-    //private lateinit var favPlaces: RecyclerView
+    lateinit var snapHelper: PagerSnapHelper
+    var scrollToPositionInGrid: Int = 0
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        showPopularPhotosButton.setOnClickListener { view -> onClick(view) }
         (application as MyApplication).appComponent.doInjection(this)
         photosViewModel = ViewModelProviders.of(this, viewModelFactory).get(PhotosViewModel::class.java!!)
-        //favPlaces = findViewById<View>(R.id.photoGrid) as RecyclerView
-
+        snapHelper = PagerSnapHelper()
+        hitPhotosAPIAndObserve()
     }
 
-    fun onClick(view: View) {
-        if (view.id == R.id.showPopularPhotosButton) {
-            onDisplayPhotosClick()
-        }
-    }
-
-    internal fun onDisplayPhotosClick(scrollToPosition: Int = 0) {
+    private fun hitPhotosAPIAndObserve() {
         if (isAPIKeyAvailable()) {
             photoGrid.adapter = StaggeredAdapter()
             photosViewModel.listLiveData.observe(this, androidx.lifecycle.Observer {
@@ -60,15 +52,17 @@ class MainActivity : AppCompatActivity() {
             photosViewModel.progressLoadStatus.observe(this, androidx.lifecycle.Observer {
                 when {
                     it.status == Status.LOADING -> {
-
+                        indeterminateBar.visibility = View.VISIBLE
                     }
                     it.status == Status.SUCCESS -> {
-                        renderSuccessResponse(scrollToPosition)
+                        indeterminateBar.visibility = View.GONE
+                        renderSuccessResponse()
                     }
                     it.status == Status.COMPLETED -> {
 
                     }
                     it.status == Status.ERROR -> {
+                        indeterminateBar.visibility = View.GONE
                         Toast.makeText(
                             this@MainActivity,
                             resources.getString(R.string.error_string),
@@ -82,55 +76,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /*
-* method to handle success response
-* */
-    private fun renderSuccessResponse(scrollToPosition: Int) {
-        if (photosViewModel.firstLoad) {
-            val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-            layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS
-            photoGrid.visibility = View.VISIBLE
-            showPopularPhotosButton.visibility = View.GONE
-            photoGrid.layoutManager = layoutManager
-            photoGrid.setHasFixedSize(true)
-            photosViewModel.firstLoad = false
-            photoGrid.scrollToPosition(scrollToPosition)
-        }
-        //favPlaces.adapter?.notifyDataSetChanged()
-        (photoGrid.adapter as StaggeredAdapter).setOnBluetoothDeviceClickedListener(object :
-            StaggeredAdapter.OnBluetoothDeviceClickedListener {
+    private fun setupGridClickListener() {
+        (photoGrid.adapter as StaggeredAdapter).setOnBluetoothDeviceClickedListener(object: StaggeredAdapter.OnBluetoothDeviceClickedListener{
             override fun onPhotoClicked(photoId: String?, position: Int) {
-                startFullPhotoDisplayActivity(photoId, position)
-                Log.d("TradeRevChallengeTest", photoId.toString())
+                showSlidingRecylerViewPager(photoId, position)
             }
+
         })
     }
-
-    private fun startFullPhotoDisplayActivity(photoId: String?, position: Int) {
-        if (isAPIKeyAvailable()) {
-            val intent = Intent(this@MainActivity, FullPhotoDisplayActivity::class.java)
-            intent.putExtra("photoId", photoId)
-            Log.d("Positioning position", position.toString())
-            Log.d("Positioning loadinitpn", loadInitPageNumber.toString())
-            Log.d("Positioning currentPage", MyApplication.currentPageNumber.toString())
-            intent.putExtra("position", position + ((loadInitPageNumber -1) * AppConstants.PAGINATION_NO_OF_ITEMS_ON_SINGLE_PAGE))
-            intent.putExtra("requestCode", FULL_SCREEN_REQUEST_CODE)
-            startActivityForResult(intent, FULL_SCREEN_REQUEST_CODE)
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+    private fun renderSuccessResponse() {
+        if (photosViewModel.firstLoad) {
+            showGrid()
+            photosViewModel.firstLoad = false
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-          FULL_SCREEN_REQUEST_CODE -> {
-              val scrollToPosition = data?.getIntExtra("scrollToPosition",0)
-              loadInitPageNumber = data?.getIntExtra("loadInitPageNumber",1)?:1
-              photosViewModel.listLiveData.value?.dataSource?.invalidate()
-              photosViewModel.firstLoad = true
-              onDisplayPhotosClick(scrollToPosition?:0)
-          }
-        }
+        setupGridClickListener()
     }
 
     private fun isAPIKeyAvailable(): Boolean {
@@ -146,5 +105,37 @@ class MainActivity : AppCompatActivity() {
             }
             false
         } else true
+    }
+
+    override fun onBackPressed() {
+        showGrid()
+    }
+
+    private fun showGrid() {
+        val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        layoutManager.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS
+        photoGrid.layoutManager = layoutManager
+        photoGrid.setHasFixedSize(true)
+        photosViewModel.firstLoad = false
+        photoGrid.layoutManager = layoutManager
+        snapHelper.attachToRecyclerView(null)
+        photoGrid.scrollToPosition(scrollToPositionInGrid)
+    }
+
+    private fun showSlidingRecylerViewPager(photoId: String?, position: Int) {
+        val layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+        Log.d("TradeRevChallengeTest", photoId.toString())
+        photoGrid.layoutManager = layoutManager
+        photoGrid.scrollToPosition(position)
+        snapHelper.attachToRecyclerView(photoGrid)
+        photoGrid.attachSnapHelperWithListener(
+            snapHelper,
+            SnapOnScrollListener.Behavior.NOTIFY_ON_SCROLL,
+            object : OnSnapPositionChangeListener {
+                override fun onSnapPositionChange(position: Int) {
+                    scrollToPositionInGrid = position
+                }
+
+            })
     }
 }

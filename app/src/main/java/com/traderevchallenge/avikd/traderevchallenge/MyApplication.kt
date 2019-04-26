@@ -13,9 +13,8 @@ class MyApplication : Application() {
         internal set
     companion object {
         internal lateinit var context: Context
-        var currentPageNumber: Int = 1
         fun getContext(): Context {
-            return context;
+            return context
         }
 
     }

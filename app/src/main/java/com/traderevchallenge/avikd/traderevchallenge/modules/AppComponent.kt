@@ -1,6 +1,5 @@
 package com.traderevchallenge.avikd.traderevchallenge.modules
 
-import com.traderevchallenge.avikd.traderevchallenge.FullPhotoDisplayActivity
 import com.traderevchallenge.avikd.traderevchallenge.MainActivity
 import dagger.Component
 import javax.inject.Singleton
@@ -10,5 +9,4 @@ import javax.inject.Singleton
 @Singleton
 interface AppComponent {
     fun doInjection(mainActivity: MainActivity)
-    fun doInjectionPhotos(fullPhotoDisplayActivity: FullPhotoDisplayActivity)
 }

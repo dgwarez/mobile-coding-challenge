@@ -14,7 +14,7 @@ class StaggeredPhotosViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     fun bind(photos: PhotosBase?) {
         if (photos != null) {
             itemView.photoName.text = photos.alt_description
-            val url = photos.urls?.small
+            val url = photos.urls?.regular
             Glide.with(itemView.context)
                 .load(url)
                 .apply(RequestOptions.placeholderOf(R.drawable.download))

@@ -4,24 +4,19 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@android:color/black"
         tools:context=".MainActivity">
-
-    <TextView
-            android:id="@+id/showPopularPhotosButton"
+    <ProgressBar
+            android:id="@+id/indeterminateBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="15dp"
-            android:layout_margin="20dp"
-            android:text="@string/discover_photos_string"
             android:layout_centerInParent="true"
-            android:background="@drawable/round_rect_background"
-            android:textSize="18sp"
-            android:textColor="@android:color/white"/>
-
+            android:visibility="gone"
+    />
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/photoGrid"
-            android:visibility="gone"/>
+            android:layout_centerInParent="true"/>
 
 </RelativeLayout>
