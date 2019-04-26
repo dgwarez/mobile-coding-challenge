@@ -2,8 +2,9 @@ package com.traderevchallenge.avikd.traderevchallenge
 
 
 import android.content.DialogInterface
+import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
+import android.os.Handler
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -27,6 +28,7 @@ import com.traderevchallenge.avikd.traderevchallenge.viewmodels.ViewModelFactory
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.annotations.Nullable
 import javax.inject.Inject
+import android.os.Parcelable
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,6 +39,9 @@ class MainActivity : AppCompatActivity() {
     lateinit var snapHelper: PagerSnapHelper
     var scrollToPositionInGrid: Int = 0
     var isGridVisible = true
+    private val KEY_RECYCLER_STATE = "recycler_state"
+    private var mBundleRecyclerViewState: Bundle? = null
+    private var mListState: Parcelable? = null
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,12 +114,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupGridClickListener() {
-        (photoGrid.adapter as StaggeredAdapter).setOnBluetoothDeviceClickedListener(object: StaggeredAdapter.OnBluetoothDeviceClickedListener{
+        (photoGrid.adapter as StaggeredAdapter).setOnBluetoothDeviceClickedListener(object :
+            StaggeredAdapter.OnBluetoothDeviceClickedListener {
             override fun onPhotoClicked(photoId: String?, position: Int) {
-                if (isGridVisible)
-                showSlidingRecylerViewPager(photoId, position)
-                else {
-                    photosViewModel.hitPhotosByIdApi(this@MainActivity,photoId)
+                if (isGridVisible) {
+                    scrollToPositionInGrid = position
+                    showSlidingRecyclerViewPager()
+                } else {
+                    photosViewModel.hitPhotosByIdApi(this@MainActivity, photoId)
                 }
             }
 
@@ -172,12 +179,11 @@ class MainActivity : AppCompatActivity() {
         photoGrid.scrollToPosition(scrollToPositionInGrid)
     }
 
-    private fun showSlidingRecylerViewPager(photoId: String?, position: Int) {
+    private fun showSlidingRecyclerViewPager() {
         isGridVisible = false
         val layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-        Log.d("TradeRevChallengeTest", photoId.toString())
         photoGrid.layoutManager = layoutManager
-        photoGrid.scrollToPosition(position)
+        photoGrid.scrollToPosition(scrollToPositionInGrid)
         snapHelper.attachToRecyclerView(photoGrid)
         photoGrid.attachSnapHelperWithListener(
             snapHelper,
@@ -188,5 +194,27 @@ class MainActivity : AppCompatActivity() {
                 }
 
             })
+    }
+
+    public override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+        mListState = photoGrid.layoutManager?.onSaveInstanceState()
+        mBundleRecyclerViewState?.putParcelable(KEY_RECYCLER_STATE, mListState)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (mBundleRecyclerViewState != null) {
+            Handler().postDelayed({
+                mListState = (mBundleRecyclerViewState as Bundle).getParcelable(KEY_RECYCLER_STATE)
+                photoGrid.layoutManager?.onRestoreInstanceState(mListState)
+            }, 50)
+
+        }
+        if (isGridVisible) {
+            showGrid()
+        } else {
+            showSlidingRecyclerViewPager()
+        }
     }
 }
