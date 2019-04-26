@@ -13,7 +13,6 @@ import kotlinx.android.synthetic.main.staggered_layout.view.*
 class StaggeredPhotosViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     fun bind(photos: PhotosBase?) {
         if (photos != null) {
-            itemView.photoName.text = photos.alt_description
             val url = photos.urls?.regular
             Glide.with(itemView.context)
                 .load(url)
