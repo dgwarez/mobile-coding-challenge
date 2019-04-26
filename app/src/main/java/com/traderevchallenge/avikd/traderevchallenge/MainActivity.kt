@@ -29,6 +29,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.annotations.Nullable
 import javax.inject.Inject
 import android.os.Parcelable
+import android.R.attr.orientation
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -204,6 +207,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        val orientationLand = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (mBundleRecyclerViewState != null) {
             Handler().postDelayed({
                 mListState = (mBundleRecyclerViewState as Bundle).getParcelable(KEY_RECYCLER_STATE)

@@ -21,7 +21,7 @@
                 android:layout_height="match_parent"
                 android:id="@+id/photoImageView"
                 android:adjustViewBounds="true"
-                android:scaleType="fitXY" />
+                android:scaleType="fitCenter" />
 
             <TextView
                 android:layout_width="match_parent"
