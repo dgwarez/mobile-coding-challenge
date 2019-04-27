@@ -19,7 +19,7 @@ Sample app.properties file (Only the line below)
 
 API_KEY=YOUR_API_KEY_HERE
 
-A blank API_KEY property has already been added in app.propeties present in the repo. The actual API key used for testing hasn't been uploaded to GitHub as instructed.
+A blank API_KEY property has already been added in app.propeties present in the repo. The actual API key used for testing hasn't been uploaded to GitHub.
 
 ## App functionality
 
