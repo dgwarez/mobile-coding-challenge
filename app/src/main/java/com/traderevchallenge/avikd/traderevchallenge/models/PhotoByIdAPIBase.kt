@@ -25,7 +25,7 @@ data class PhotoByIdAPIBase (
 	val links : Links?,
 	val categories : List<String>?,
 	val sponsored : Boolean?,
-	val sponsored_by : String?,
+	val sponsored_by : Sponsored_by?,
 	val sponsored_impressions_id : String?,
 	val likes : Int?,
 	val liked_by_user : Boolean?,

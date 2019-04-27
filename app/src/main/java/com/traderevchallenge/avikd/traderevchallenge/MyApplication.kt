@@ -10,19 +10,11 @@ import com.traderevchallenge.avikd.traderevchallenge.modules.UtilsModule
 
 class MyApplication : Application() {
     lateinit var appComponent: AppComponent
-        internal set
-    companion object {
-        internal lateinit var context: Context
-        fun getContext(): Context {
-            return context
-        }
-
-    }
-
+    lateinit var context: Context
 
     override fun onCreate() {
         super.onCreate()
-        context = applicationContext
+        context = this
         appComponent = DaggerAppComponent.builder().appModule(AppModule(this)).utilsModule(UtilsModule()).build()
     }
 

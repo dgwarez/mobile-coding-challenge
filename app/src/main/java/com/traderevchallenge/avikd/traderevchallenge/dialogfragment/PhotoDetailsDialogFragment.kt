@@ -10,8 +10,11 @@ import com.bumptech.glide.request.RequestOptions
 import com.traderevchallenge.avikd.traderevchallenge.R
 import kotlinx.android.synthetic.main.fragment_photo_details_dialog.view.*
 
-
-class PhotoDetailsDialogFragmentent : DialogFragment() {
+/**
+ * PhotoDetailsDialogFragment
+ * Dialog fragment used to show more details about a specific photo
+ */
+class PhotoDetailsDialogFragment : DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_photo_details_dialog, container, false)
         rootView.title.text = String.format(getString(R.string.alt_description_header,arguments?.getString("alt_description")))

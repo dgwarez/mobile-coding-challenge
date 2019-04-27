@@ -3,7 +3,10 @@ package com.traderevchallenge.avikd.traderevchallenge.network
 import androidx.annotation.NonNull
 import org.jetbrains.annotations.Nullable
 
-
+/**
+ * APIResponse
+ * APIResponse class returns generic APIResponse objects for all APIResponse calls
+ */
 class ApiResponse<T> private constructor(
     val status: Status?, @param:Nullable @field:Nullable
     val data: T?, @param:Nullable @field:Nullable

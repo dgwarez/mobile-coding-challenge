@@ -1,10 +1,8 @@
 package com.traderevchallenge.avikd.traderevchallenge.datasource
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PageKeyedDataSource
-import com.traderevchallenge.avikd.traderevchallenge.MyApplication
 import com.traderevchallenge.avikd.traderevchallenge.models.PhotosBase
 import com.traderevchallenge.avikd.traderevchallenge.network.ApiResponse
 import com.traderevchallenge.avikd.traderevchallenge.network.Repository
@@ -12,9 +10,14 @@ import com.traderevchallenge.avikd.traderevchallenge.utils.ApiKeyProvider
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.Action
 import io.reactivex.schedulers.Schedulers
 
+/**
+ * PhotosDataSourceClass
+ * PageKeyedDataSource class for Android pagination library
+ * loadInitial - loads initial batch
+ * loadAfter - loads more data on page scroll of recycler view that this data source class is linked with
+ */
 class PhotosDataSourceClass internal constructor(
     private val repository: Repository,
     private val compositeDisposable: CompositeDisposable
@@ -28,7 +31,7 @@ class PhotosDataSourceClass internal constructor(
     ) {
         compositeDisposable.clear()
         compositeDisposable.add(repository.executePhotos(
-            ApiKeyProvider.fetchApiKey(),
+            ApiKeyProvider.fetchApiKey(null),
             1
         )
             .subscribeOn(Schedulers.io())
@@ -38,8 +41,7 @@ class PhotosDataSourceClass internal constructor(
                 { result ->
                     run {
                         progressLiveStatus.postValue(ApiResponse.success(result))
-                        var previousPageKey:Int? = null
-                        callback.onResult(result, previousPageKey, 2)
+                        callback.onResult(result, null, 2)
                     }
                 },
                 { throwable -> progressLiveStatus.postValue(ApiResponse.error(throwable)) }
@@ -60,7 +62,7 @@ class PhotosDataSourceClass internal constructor(
         callback: PageKeyedDataSource.LoadCallback<Int, PhotosBase>
     ) {
         compositeDisposable.add(repository.executePhotos(
-            ApiKeyProvider.fetchApiKey(),
+            ApiKeyProvider.fetchApiKey(null),
             params.key
         )
             .subscribeOn(Schedulers.io())

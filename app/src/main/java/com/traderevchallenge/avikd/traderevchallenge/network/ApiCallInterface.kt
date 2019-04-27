@@ -8,6 +8,10 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
+/**
+ * ApiCallInterface
+ * ApiCallInterface to define API requests for retrofit and okhttp
+ */
 interface ApiCallInterface {
 
     @GET(UrlConstants.PHOTOS_URL)

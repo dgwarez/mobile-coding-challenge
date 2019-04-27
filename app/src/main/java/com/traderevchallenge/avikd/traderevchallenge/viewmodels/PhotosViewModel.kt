@@ -18,7 +18,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 
-
+/**
+ * PhotosViewModel
+ * PhotosViewModel class to for MainActivity
+ * Creates live data objects for passing observable data to MainActivity
+ */
 class PhotosViewModel(repository: Repository) : ViewModel() {
 
     private val photosDataSourceFactory: PhotosDataSourceFactory
@@ -49,7 +53,7 @@ class PhotosViewModel(repository: Repository) : ViewModel() {
 
     fun hitPhotosByIdApi(context: Context, mPhotoId: String?) {
         compositeDisposable.add(mRepository.executePhotoDetailsById(
-            ApiKeyProvider.fetchApiKey(),
+            ApiKeyProvider.fetchApiKey(null),
             mPhotoId
         )
             .subscribeOn(Schedulers.io())

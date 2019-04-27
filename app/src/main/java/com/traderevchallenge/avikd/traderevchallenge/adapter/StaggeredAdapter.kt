@@ -7,7 +7,11 @@ import androidx.recyclerview.widget.DiffUtil
 import com.traderevchallenge.avikd.traderevchallenge.models.PhotosBase
 import com.traderevchallenge.avikd.traderevchallenge.viewholder.StaggeredPhotosViewHolder
 
-
+/**
+ * DIFF_CALLBACK
+ * DIFF_CALLBACK is used to detect changes in items in paginated lists and load data accordingly
+ * In this case each item is uniquely identified with the photo id
+ */
 var DIFF_CALLBACK: DiffUtil.ItemCallback<PhotosBase> = object : DiffUtil.ItemCallback<PhotosBase>() {
     override fun areItemsTheSame(oldItem: PhotosBase, newItem: PhotosBase): Boolean {
         return oldItem.id == newItem.id
@@ -18,6 +22,10 @@ var DIFF_CALLBACK: DiffUtil.ItemCallback<PhotosBase> = object : DiffUtil.ItemCal
     }
 }
 
+/**
+ * StaggeredAdapter
+ * This is the data adapter class for the photogrid layout
+ */
 class StaggeredAdapter :
     PagedListAdapter<PhotosBase, StaggeredPhotosViewHolder>(DIFF_CALLBACK) {
     var onItemClickListener: StaggeredAdapter.OnItemClickListener? = null
@@ -28,7 +36,7 @@ class StaggeredAdapter :
     override fun onBindViewHolder(holder: StaggeredPhotosViewHolder, position: Int) {
         if (itemCount >0 ) {
             holder.bind(getItem(holder.adapterPosition))
-            holder.itemView.setOnClickListener(View.OnClickListener { mBluetoothClickListener?.onPhotoClicked(getItem(holder.adapterPosition)?.id, position) })
+            holder.itemView.setOnClickListener(View.OnClickListener { mPhotoClickListener?.onPhotoClicked(getItem(holder.adapterPosition)?.id, position) })
         }
     }
 
@@ -44,14 +52,14 @@ class StaggeredAdapter :
         fun onItemClick(position: Int)
     }
 
-    interface OnBluetoothDeviceClickedListener {
+    interface OnPhotoClickedListener {
         fun onPhotoClicked(photoId: String?, position: Int)
     }
 
-    private var mBluetoothClickListener: OnBluetoothDeviceClickedListener? = null
+    private var mPhotoClickListener: OnPhotoClickedListener? = null
 
-    fun setOnBluetoothDeviceClickedListener(listener: OnBluetoothDeviceClickedListener) {
-        mBluetoothClickListener = listener
+    fun setOnPhotoClickedListener(listener: OnPhotoClickedListener) {
+        mPhotoClickListener = listener
     }
 }
 

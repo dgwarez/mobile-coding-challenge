@@ -5,7 +5,10 @@ import com.traderevchallenge.avikd.traderevchallenge.models.PhotoByIdAPIBase
 import com.traderevchallenge.avikd.traderevchallenge.models.PhotosBase
 import io.reactivex.Observable
 
-
+/**
+ * Repository
+ * Repository class to make API calls
+ */
 class Repository(private val apiCallInterface: ApiCallInterface) {
 
     /*

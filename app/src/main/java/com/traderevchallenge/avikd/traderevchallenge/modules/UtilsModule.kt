@@ -17,7 +17,10 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-
+/**
+ * UtilsModule
+ * UtilsModule for dependency injection of singleton objects used throughout the app
+ */
 @Module
 class UtilsModule {
 
@@ -39,13 +42,6 @@ class UtilsModule {
 
             return httpClient.build()
         }
-
-    @Provides
-    @Singleton
-    internal fun provideGson(): Gson {
-        val builder = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-        return builder.setLenient().create()
-    }
 
     @Provides
     @Singleton

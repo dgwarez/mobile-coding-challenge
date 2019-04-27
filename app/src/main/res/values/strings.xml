@@ -6,7 +6,7 @@
     <string name="api_key_error">API Key not found. Place api key as APP_KEY="YOUR_API_KEY_HERE" in app.properties file
         in assets folder
     </string>
-    <string name="click_here">Click the photo for more information</string>
+    <string name="click_here">Click the photo while in fullscreen mode for more information</string>
     <string name="discover_photos_header">Unsplash photos</string>
     <string name="alt_description_header">Title: %s</string>
     <string name="user_name_header">User: %s</string>

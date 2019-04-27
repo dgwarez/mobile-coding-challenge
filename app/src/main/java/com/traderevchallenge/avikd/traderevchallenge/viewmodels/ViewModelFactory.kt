@@ -6,7 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.traderevchallenge.avikd.traderevchallenge.network.Repository
 
-
+/**
+ * ViewModelFactory
+ * ViewModelFactory class to create viewModel objects
+ * Instance of repository class is injected using Dagger2 DI
+ */
 class ViewModelFactory @Inject
 constructor(private val repository: Repository) : ViewModelProvider.Factory {
 

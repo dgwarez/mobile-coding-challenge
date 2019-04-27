@@ -10,6 +10,11 @@ import com.traderevchallenge.avikd.traderevchallenge.R
 import com.traderevchallenge.avikd.traderevchallenge.models.PhotosBase
 import kotlinx.android.synthetic.main.staggered_layout.view.*
 
+/**
+ * StaggeredPhotosViewHolder
+ * StaggeredPhotosViewHolder class to bind data to view items in layout xml
+ * Using glide library to download and load images
+ */
 class StaggeredPhotosViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     fun bind(photos: PhotosBase?) {
         if (photos != null) {
