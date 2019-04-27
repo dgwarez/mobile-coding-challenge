@@ -1,5 +1,5 @@
 # Trade Rev Coding Challenge
-This is a simple image display Android native app for showing popular images from Unsplash photos API in a list. There's also a full screen view with details of each image. This app is being built for a code challenge with TradeRev
+This is a simple image display Android native app for showing images from Unsplash photos API in a list. There's also a full screen view with details of each image. This app is being built for a code challenge with TradeRev
 
 ## Project Setup
 
